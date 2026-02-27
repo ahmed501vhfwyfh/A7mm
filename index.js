@@ -5,14 +5,14 @@ client.on('ready', async () => {
   console.log(`${client.user.username} is ready!`);
 })
 //ثبات فويس 24 ساعه v13 بدون اي مشاكل
-const { joinVoiceChannel } = require('@discordjs/voice');
+const { 1445485195464806420 } = require('@discordjs/voice');
 client.on('ready', () => {
     
     setInterval( async () => {
     client.channels.fetch(process.env.channel) 
      .then((channel) => { 
       const VoiceConnection = joinVoiceChannel({
-       channelId: channel.id, 
+       channelId: channel.1294079344401977394, 
        guildId: process.env.guild, 
        selfMute: true,
        selfDeaf: true,
