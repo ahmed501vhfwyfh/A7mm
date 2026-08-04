@@ -2,7 +2,6 @@ require('dotenv').config();
 
 const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { Player, QueryType } = require('discord-player');
-// إضافة أدوات معالجة الصوت لضمان خروج الصوت وسماعه بوضوح
 require('ffmpeg-static');
 
 const client = new Client({
@@ -124,6 +123,7 @@ async function join247Channel() {
       metadata: { channel: textChannel },
       selfDeaf: true,
       volume: 80,
+      skipOnNoStream: true, // تجاوز الأغاني التالفة تلقائياً
       leaveOnEmpty: false,
       leaveOnEnd: false,
       leaveOnStop: false,
@@ -163,6 +163,7 @@ client.on('interactionCreate', async (interaction) => {
           metadata: { channel },
           selfDeaf: true,
           volume: 80,
+          skipOnNoStream: true, // تجاوز الأغاني التالفة أو التي تعذر استخراج بثها
           leaveOnEmpty: false,
           leaveOnEnd: false,
           leaveOnStop: false,
