@@ -17,13 +17,10 @@ const client = new Client({
 const player = new Player(client);
 
 (async () => {
-  // Load all default extractors (SoundCloud, Spotify metadata, Apple Music, etc.)
   await player.extractors.loadDefault();
-  // Remove the unstable scraping-based YouTube extractor if needed, or keep it alongside YoutubeiExtractor
   try {
     await player.extractors.unregister('com.discord-player.youtubeextractor');
   } catch (e) {}
-  // Register the reliable YouTube extractor instead
   await player.extractors.register(YoutubeiExtractor, {});
 })();
 
@@ -53,10 +50,10 @@ player.events.on('playerError', (queue, error) => {
 const commands = [
   new SlashCommandBuilder()
     .setName('play')
-    .setDescription('شغّل أغنية أو ضيفها للقائمة (يدعم سبوتيفاي ويوتيوب)')
+    .setDescription('شغّل أغنية أو ضيفها للقائمة')
     .addStringOption(option =>
       option.setName('query')
-        .setDescription('اسم الأغنية، رابط سبوتيفاي، أو رابط يوتيوب')
+        .setDescription('اسم الأغنية، رابط سبوتيفاي، أو يوتيوب')
         .setRequired(true)),
   new SlashCommandBuilder()
     .setName('skip')
@@ -161,10 +158,8 @@ client.on('interactionCreate', async (interaction) => {
       await interaction.deferReply();
       const query = interaction.options.getString('query', true);
 
-      // استخدام AUTO ليتمكن البوت من قراءة روابط Spotify و YouTube والبحث بذكاء
-            // تعديل خيارات البحث لتكون أكثر دقة للكلمات النصية
       const { track } = await player.play(member.voice.channel, query, {
-        searchEngine: QueryType.YOUTUBE_SEARCH,
+        searchEngine: QueryType.AUTO,
         nodeOptions: {
           metadata: { channel },
           selfDeaf: true,
@@ -172,9 +167,6 @@ client.on('interactionCreate', async (interaction) => {
           leaveOnEmpty: false,
           leaveOnEnd: false,
           leaveOnStop: false,
-        },
-      });
-
         },
       });
 
@@ -208,7 +200,7 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (commandName === 'volume') {
-      if (!queue) return interaction.reply({ content: 'main فيه قائمة تشغيل حاليًا.', ephemeral: true });
+      if (!queue) return interaction.reply({ content: 'ما فيه قائمة تشغيل حاليًا.', ephemeral: true });
       const level = interaction.options.getInteger('level', true);
       queue.node.setVolume(level);
       return interaction.reply(`🔊 مستوى الصوت: ${level}%`);
