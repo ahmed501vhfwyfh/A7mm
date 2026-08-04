@@ -2,6 +2,8 @@ require('dotenv').config();
 
 const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { Player, QueryType } = require('discord-player');
+// إضافة أدوات معالجة الصوت لضمان خروج الصوت وسماعه بوضوح
+require('ffmpeg-static');
 
 const client = new Client({
   intents: [
