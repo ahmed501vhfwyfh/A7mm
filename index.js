@@ -65,7 +65,7 @@ const commands = [
   new SlashCommandBuilder()
     .setName('queue')
     .setDescription('عرض قائمة الانتظار'),
-  newSlashCommandBuilder()
+  new SlashCommandBuilder()
     .setName('nowplaying')
     .setDescription('عرض الأغنية الحالية'),
   new SlashCommandBuilder()
@@ -153,7 +153,6 @@ client.on('interactionCreate', async (interaction) => {
       await interaction.deferReply();
       const query = interaction.options.getString('query', true);
 
-      // إذا كان المدخل رابطاً يعمل بـ AUTO، وإذا كان نصاً يتم توجيهه للبحث في يوتيوب حصراً
       const searchEngine = query.startsWith('http') ? QueryType.AUTO : QueryType.YOUTUBE_SEARCH;
 
       const { track } = await player.play(member.voice.channel, query, {
