@@ -2,7 +2,6 @@ require('dotenv').config();
 
 const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { Player, QueryType } = require('discord-player');
-const { DefaultExtractors } = require('@discord-player/extractor');
 
 const client = new Client({
   intents: [
@@ -17,8 +16,8 @@ const client = new Client({
 const player = new Player(client);
 
 (async () => {
-  // تحميل جميع المحسّنات الرسمية (يوتيوب، سبوتيفاي، ساوندكلاود، وغيرها)
-  await player.extractors.loadMulti(DefaultExtractors);
+  // تحميل كافة المحسّنات الافتراضية المدمجة (تتضمن Spotify وغيرها)
+  await player.extractors.loadDefault();
 })();
 
 player.events.on('playerStart', (queue, track) => {
@@ -47,10 +46,10 @@ player.events.on('playerError', (queue, error) => {
 const commands = [
   new SlashCommandBuilder()
     .setName('play')
-    .setDescription('شغّل أغنية أو ضيفها للقائمة (يوتيوب وسبوتيفاي)')
+    .setDescription('شغّل أغنية أو ضيفها للقائمة (يدعم سبوتيفاي ويوتيوب)')
     .addStringOption(option =>
       option.setName('query')
-        .setDescription('اسم الأغنية أو رابط يوتيوب/سبوتيفاي')
+        .setDescription('اسم الأغنية أو الرابط')
         .setRequired(true)),
   new SlashCommandBuilder()
     .setName('skip')
