@@ -16,7 +16,6 @@ const client = new Client({
 const player = new Player(client);
 
 (async () => {
-  // تحميل كافة المحسّنات الافتراضية المدمجة (تتضمن Spotify وغيرها)
   await player.extractors.loadDefault();
 })();
 
@@ -46,10 +45,10 @@ player.events.on('playerError', (queue, error) => {
 const commands = [
   new SlashCommandBuilder()
     .setName('play')
-    .setDescription('شغّل أغنية أو ضيفها للقائمة (يدعم سبوتيفاي ويوتيوب)')
+    .setDescription('شغّل أغنية أو ضيفها للقائمة')
     .addStringOption(option =>
       option.setName('query')
-        .setDescription('اسم الأغنية أو الرابط')
+        .setDescription('اسم الأغنية، رابط يوتيوب، أو رابط سبوتيفاي')
         .setRequired(true)),
   new SlashCommandBuilder()
     .setName('skip')
@@ -66,7 +65,7 @@ const commands = [
   new SlashCommandBuilder()
     .setName('queue')
     .setDescription('عرض قائمة الانتظار'),
-  new SlashCommandBuilder()
+  newSlashCommandBuilder()
     .setName('nowplaying')
     .setDescription('عرض الأغنية الحالية'),
   new SlashCommandBuilder()
@@ -154,7 +153,11 @@ client.on('interactionCreate', async (interaction) => {
       await interaction.deferReply();
       const query = interaction.options.getString('query', true);
 
+      // إذا كان المدخل رابطاً يعمل بـ AUTO، وإذا كان نصاً يتم توجيهه للبحث في يوتيوب حصراً
+      const searchEngine = query.startsWith('http') ? QueryType.AUTO : QueryType.YOUTUBE_SEARCH;
+
       const { track } = await player.play(member.voice.channel, query, {
+        searchEngine: searchEngine,
         nodeOptions: {
           metadata: { channel },
           selfDeaf: true,
