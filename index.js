@@ -162,8 +162,9 @@ client.on('interactionCreate', async (interaction) => {
       const query = interaction.options.getString('query', true);
 
       // استخدام AUTO ليتمكن البوت من قراءة روابط Spotify و YouTube والبحث بذكاء
+            // تعديل خيارات البحث لتكون أكثر دقة للكلمات النصية
       const { track } = await player.play(member.voice.channel, query, {
-        searchEngine: QueryType.AUTO,
+        searchEngine: QueryType.YOUTUBE_SEARCH,
         nodeOptions: {
           metadata: { channel },
           selfDeaf: true,
@@ -171,6 +172,9 @@ client.on('interactionCreate', async (interaction) => {
           leaveOnEmpty: false,
           leaveOnEnd: false,
           leaveOnStop: false,
+        },
+      });
+
         },
       });
 
