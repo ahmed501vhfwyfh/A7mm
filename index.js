@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { Player, QueryType } = require('discord-player');
-const { YoutubeiExtractor } = require('discord-player-youtubei');
+const { DefaultExtractors } = require('@discord-player/extractor');
 
 const client = new Client({
   intents: [
@@ -17,11 +17,8 @@ const client = new Client({
 const player = new Player(client);
 
 (async () => {
-  await player.extractors.loadDefault();
-  try {
-    await player.extractors.unregister('com.discord-player.youtubeextractor');
-  } catch (e) {}
-  await player.extractors.register(YoutubeiExtractor, {});
+  // تحميل جميع المحسّنات الرسمية (يوتيوب، سبوتيفاي، ساوندكلاود، وغيرها)
+  await player.extractors.loadMulti(DefaultExtractors);
 })();
 
 player.events.on('playerStart', (queue, track) => {
@@ -50,10 +47,10 @@ player.events.on('playerError', (queue, error) => {
 const commands = [
   new SlashCommandBuilder()
     .setName('play')
-    .setDescription('شغّل أغنية أو ضيفها للقائمة')
+    .setDescription('شغّل أغنية أو ضيفها للقائمة (يوتيوب وسبوتيفاي)')
     .addStringOption(option =>
       option.setName('query')
-        .setDescription('اسم الأغنية، رابط سبوتيفاي، أو يوتيوب')
+        .setDescription('اسم الأغنية أو رابط يوتيوب/سبوتيفاي')
         .setRequired(true)),
   new SlashCommandBuilder()
     .setName('skip')
@@ -158,11 +155,7 @@ client.on('interactionCreate', async (interaction) => {
       await interaction.deferReply();
       const query = interaction.options.getString('query', true);
 
-      // إذا كان المدخل رابطاً يتم استخدام AUTO، وإذا كان نصاً يتم البحث المباشر في يوتيوب
-      const searchEngine = query.startsWith('http') ? QueryType.AUTO : QueryType.YOUTUBE_SEARCH;
-
       const { track } = await player.play(member.voice.channel, query, {
-        searchEngine: searchEngine,
         nodeOptions: {
           metadata: { channel },
           selfDeaf: true,
