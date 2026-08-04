@@ -158,8 +158,11 @@ client.on('interactionCreate', async (interaction) => {
       await interaction.deferReply();
       const query = interaction.options.getString('query', true);
 
+      // إذا كان المدخل رابطاً يتم استخدام AUTO، وإذا كان نصاً يتم البحث المباشر في يوتيوب
+      const searchEngine = query.startsWith('http') ? QueryType.AUTO : QueryType.YOUTUBE_SEARCH;
+
       const { track } = await player.play(member.voice.channel, query, {
-        searchEngine: QueryType.AUTO,
+        searchEngine: searchEngine,
         nodeOptions: {
           metadata: { channel },
           selfDeaf: true,
