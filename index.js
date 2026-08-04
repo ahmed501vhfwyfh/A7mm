@@ -1,4 +1,4 @@
-Require('dotenv').config();
+require('dotenv').config();
 
 const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { Player, QueryType } = require('discord-player');
