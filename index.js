@@ -17,10 +17,12 @@ const client = new Client({
 const player = new Player(client);
 
 (async () => {
-  // Register the reliable YouTube extractor (avoids 429 rate-limit errors)
+  // Load all default extractors (SoundCloud, Spotify metadata, etc.)
+  await player.extractors.loadDefault();
+  // Remove the unstable scraping-based YouTube extractor
+  await player.extractors.unregister('com.discord-player.youtubeextractor');
+  // Register the reliable YouTube extractor instead
   await player.extractors.register(YoutubeiExtractor, {});
-  // Load remaining default extractors (SoundCloud, etc.) but skip the unstable default YouTube one
-  await player.extractors.loadDefault((ext) => ext !== 'YoutubeExtractor');
 })();
 
 player.events.on('playerStart', (queue, track) => {
