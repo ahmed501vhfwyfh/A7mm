@@ -1,17 +1,20 @@
 {
-  "name": "24-voice-account",
-  "version": "0.1.0",
-  "description": "24-voice-account",
+  "name": "music-bot",
+  "version": "1.0.0",
+  "description": "Discord music bot using discord-player",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "discord.js-selfbot-v13": "^3.1.4",
-    "@discordjs/voice": "^0.17.0",
-    "express": "^4.18.3"
+    "discord.js": "^14.14.1",
+    "discord-player": "^6.7.1",
+    "@discord-player/extractor": "^4.5.1",
+    "@discordjs/opus": "^0.9.0",
+    "dotenv": "^16.4.7",
+    "mediaplex": "^0.0.9"
   },
   "engines": {
-    "node": "16.x"
+    "node": ">=18.0.0"
   }
 }
