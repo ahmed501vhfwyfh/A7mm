@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { Player, QueryType } = require('discord-player');
+const { YoutubeiExtractor } = require('discord-player-youtubei');
 require('ffmpeg-static');
 
 const client = new Client({
@@ -18,6 +19,10 @@ const player = new Player(client);
 
 (async () => {
   await player.extractors.loadDefault();
+  try {
+    await player.extractors.unregister('com.discord-player.youtubeextractor');
+  } catch (e) {}
+  await player.extractors.register(YoutubeiExtractor, {});
 })();
 
 player.events.on('playerStart', (queue, track) => {
@@ -49,7 +54,7 @@ const commands = [
     .setDescription('شغّل أغنية أو ضيفها للقائمة')
     .addStringOption(option =>
       option.setName('query')
-        .setDescription('اسم الأغنية، رابط يوتيوب، أو رابط سبوتيفاي')
+        .setDescription('اسم الأغنية أو رابط يوتيوب/سبوتيفاي')
         .setRequired(true)),
   new SlashCommandBuilder()
     .setName('skip')
@@ -123,7 +128,6 @@ async function join247Channel() {
       metadata: { channel: textChannel },
       selfDeaf: true,
       volume: 80,
-      skipOnNoStream: true, // تجاوز الأغاني التالفة تلقائياً
       leaveOnEmpty: false,
       leaveOnEnd: false,
       leaveOnStop: false,
@@ -163,7 +167,6 @@ client.on('interactionCreate', async (interaction) => {
           metadata: { channel },
           selfDeaf: true,
           volume: 80,
-          skipOnNoStream: true, // تجاوز الأغاني التالفة أو التي تعذر استخراج بثها
           leaveOnEmpty: false,
           leaveOnEnd: false,
           leaveOnStop: false,
