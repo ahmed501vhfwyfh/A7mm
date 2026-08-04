@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { Player, QueryType } = require('discord-player');
-const { YoutubeiExtractor } = require('@discord-player/extractor');
+const { YoutubeiExtractor } = require('discord-player-youtubei');
 
 const client = new Client({
   intents: [
@@ -17,8 +17,10 @@ const client = new Client({
 const player = new Player(client);
 
 (async () => {
-  // Loads default extractors (YouTube, SoundCloud, etc.)
-  await player.extractors.loadDefault();
+  // Register the reliable YouTube extractor (avoids 429 rate-limit errors)
+  await player.extractors.register(YoutubeiExtractor, {});
+  // Load remaining default extractors (SoundCloud, etc.) but skip the unstable default YouTube one
+  await player.extractors.loadDefault((ext) => ext !== 'YoutubeExtractor');
 })();
 
 player.events.on('playerStart', (queue, track) => {
