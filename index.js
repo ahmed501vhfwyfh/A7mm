@@ -95,7 +95,50 @@ async function registerCommands() {
 client.once('ready', async () => {
   console.log(`${client.user.tag} جاهز.`);
   await registerCommands();
+  await join247Channel();
 });
+
+// ---------- 24/7 auto-join ----------
+async function join247Channel() {
+  const guildId = process.env.GUILD_ID;
+  const channelId = process.env.CHANNEL_ID;
+
+  if (!guildId || !channelId) {
+    console.log('GUILD_ID أو CHANNEL_ID غير موجودين، تخطي وضع 24/7.');
+    return;
+  }
+
+  try {
+    const guild = await client.guilds.fetch(guildId);
+    const channel = await guild.channels.fetch(channelId);
+
+    if (!channel || !channel.isVoiceBased()) {
+      console.log('الروم المحدد ليس روم صوتي أو غير موجود.');
+      return;
+    }
+
+    // Pick a text channel for status messages (system channel or first available)
+    const textChannel = guild.systemChannel
+      || guild.channels.cache.find(c => c.isTextBased() && c.viewable);
+
+    const queue = player.nodes.create(guild, {
+      metadata: { channel: textChannel },
+      selfDeaf: true,
+      volume: 80,
+      leaveOnEmpty: false,
+      leaveOnEnd: false,
+      leaveOnStop: false,
+    });
+
+    if (!queue.connection) {
+      await queue.connect(channel);
+    }
+
+    console.log(`تم الاتصال بروم 24/7: ${channel.name}`);
+  } catch (err) {
+    console.error('فشل الاتصال بروم 24/7:', err);
+  }
+}
 
 // ---------- Interaction handling ----------
 client.on('interactionCreate', async (interaction) => {
@@ -120,9 +163,9 @@ client.on('interactionCreate', async (interaction) => {
           metadata: { channel },
           selfDeaf: true,
           volume: 80,
-          leaveOnEmpty: true,
-          leaveOnEmptyCooldown: 5 * 60 * 1000,
+          leaveOnEmpty: false,
           leaveOnEnd: false,
+          leaveOnStop: false,
         },
       });
 
