@@ -1,9 +1,8 @@
 require('dotenv').config();
 
-const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { Player, QueryType } = require('discord-player');
 const { YoutubeiExtractor } = require('discord-player-youtubei');
-require('ffmpeg-static');
 
 const client = new Client({
   intents: [
@@ -18,15 +17,30 @@ const client = new Client({
 const player = new Player(client);
 
 (async () => {
+  // Load all default extractors (SoundCloud, Spotify metadata, etc.)
   await player.extractors.loadDefault();
-  try {
-    await player.extractors.unregister('com.discord-player.youtubeextractor');
-  } catch (e) {}
+  // Remove the unstable scraping-based YouTube extractor
+  await player.extractors.unregister('com.discord-player.youtubeextractor');
+  // Register the reliable YouTube extractor instead
   await player.extractors.register(YoutubeiExtractor, {});
 })();
 
+// ---------- Control panel buttons ----------
+function controlRow(paused) {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('ctrl_pauseresume').setEmoji(paused ? '▶️' : '⏸️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ctrl_skip').setEmoji('⏭️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ctrl_stop').setEmoji('⏹️').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('ctrl_queue').setEmoji('📜').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ctrl_volume_down').setEmoji('🔉').setStyle(ButtonStyle.Secondary),
+  );
+}
+
 player.events.on('playerStart', (queue, track) => {
-  queue.metadata.channel.send(`▶️ الآن يشتغل: **${track.title}**`);
+  queue.metadata.channel.send({
+    content: `▶️ الآن يشتغل: **${track.title}**`,
+    components: [controlRow(false)],
+  });
 });
 
 player.events.on('audioTrackAdd', (queue, track) => {
@@ -54,7 +68,7 @@ const commands = [
     .setDescription('شغّل أغنية أو ضيفها للقائمة')
     .addStringOption(option =>
       option.setName('query')
-        .setDescription('اسم الأغنية أو رابط يوتيوب/سبوتيفاي')
+        .setDescription('اسم الأغنية أو رابط يوتيوب/ساوندكلاود')
         .setRequired(true)),
   new SlashCommandBuilder()
     .setName('skip')
@@ -121,6 +135,7 @@ async function join247Channel() {
       return;
     }
 
+    // Pick a text channel for status messages (system channel or first available)
     const textChannel = guild.systemChannel
       || guild.channels.cache.find(c => c.isTextBased() && c.viewable);
 
@@ -143,12 +158,63 @@ async function join247Channel() {
   }
 }
 
+// ---------- Button controls ----------
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isButton()) return;
+
+  const queue = player.nodes.get(interaction.guild.id);
+  if (!queue) {
+    return interaction.reply({ content: 'ما فيه شي يشتغل حاليًا.', ephemeral: true });
+  }
+
+  if (!interaction.member.voice.channel) {
+    return interaction.reply({ content: 'لازم تكون داخل روم صوتي عشان تتحكم بالبوت.', ephemeral: true });
+  }
+
+  try {
+    if (interaction.customId === 'ctrl_pauseresume') {
+      const paused = queue.node.isPaused();
+      queue.node.setPaused(!paused);
+      return interaction.reply({ content: paused ? '▶️ تم الاستئناف.' : '⏸️ تم الإيقاف المؤقت.', ephemeral: true });
+    }
+
+    if (interaction.customId === 'ctrl_skip') {
+      queue.node.skip();
+      return interaction.reply({ content: '⏭️ تم التخطي.', ephemeral: true });
+    }
+
+    if (interaction.customId === 'ctrl_stop') {
+      queue.delete();
+      return interaction.reply({ content: '⏹️ تم إيقاف التشغيل ومسح القائمة.', ephemeral: true });
+    }
+
+    if (interaction.customId === 'ctrl_queue') {
+      if (queue.tracks.size === 0) return interaction.reply({ content: 'القائمة فاضية.', ephemeral: true });
+      const tracks = queue.tracks.toArray().slice(0, 10)
+        .map((t, i) => `${i + 1}. ${t.title}`)
+        .join('\n');
+      const embed = new EmbedBuilder().setTitle('قائمة الانتظار').setDescription(tracks).setColor('Random');
+      return interaction.reply({ embeds: [embed], ephemeral: true });
+    }
+
+    if (interaction.customId === 'ctrl_volume_down') {
+      const newVolume = Math.max(0, queue.node.volume - 10);
+      queue.node.setVolume(newVolume);
+      return interaction.reply({ content: `🔉 مستوى الصوت: ${newVolume}%`, ephemeral: true });
+    }
+  } catch (err) {
+    console.error(err);
+    return interaction.reply({ content: `❌ صار خطأ: ${err.message}`, ephemeral: true });
+  }
+});
+
 // ---------- Interaction handling ----------
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
   const { commandName, member, guild, channel } = interaction;
 
+  // Commands that need the user in a voice channel
   const needsVoice = ['play', 'skip', 'pause', 'resume', 'stop', 'volume'];
   if (needsVoice.includes(commandName) && !member.voice.channel) {
     return interaction.reply({ content: 'لازم تكون داخل روم صوتي عشان تستخدم هذا الأمر.', ephemeral: true });
@@ -159,10 +225,7 @@ client.on('interactionCreate', async (interaction) => {
       await interaction.deferReply();
       const query = interaction.options.getString('query', true);
 
-      const searchEngine = query.startsWith('http') ? QueryType.AUTO : QueryType.YOUTUBE_SEARCH;
-
       const { track } = await player.play(member.voice.channel, query, {
-        searchEngine: searchEngine,
         nodeOptions: {
           metadata: { channel },
           selfDeaf: true,
