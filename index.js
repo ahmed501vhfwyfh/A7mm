@@ -227,8 +227,10 @@ client.on('interactionCreate', async (interaction) => {
     if (commandName === 'play') {
       await interaction.deferReply();
       const query = interaction.options.getString('query', true);
+      const isUrl = /^https?:\/\//i.test(query);
 
       const { track } = await player.play(member.voice.channel, query, {
+        searchEngine: isUrl ? QueryType.AUTO : QueryType.YOUTUBE_SEARCH,
         nodeOptions: {
           metadata: { channel },
           selfDeaf: true,
