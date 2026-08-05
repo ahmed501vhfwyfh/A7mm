@@ -230,7 +230,7 @@ client.on('interactionCreate', async (interaction) => {
       const isUrl = /^https?:\/\//i.test(query);
 
       const { track } = await player.play(member.voice.channel, query, {
-        searchEngine: isUrl ? QueryType.AUTO : QueryType.YOUTUBE_SEARCH,
+        searchEngine: isUrl ? QueryType.AUTO : QueryType.SOUNDCLOUD_SEARCH,
         nodeOptions: {
           metadata: { channel },
           selfDeaf: true,
