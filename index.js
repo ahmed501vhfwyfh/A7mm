@@ -17,12 +17,31 @@ const client = new Client({
 const player = new Player(client);
 
 (async () => {
-  // Load all default extractors (SoundCloud, Spotify metadata, etc.)
-  await player.extractors.loadDefault();
-  // Remove the unstable scraping-based YouTube extractor
-  await player.extractors.unregister('com.discord-player.youtubeextractor');
-  // Register the reliable YouTube extractor instead
-  await player.extractors.register(YoutubeiExtractor, {});
+  try {
+    // Load all default extractors (SoundCloud, Spotify metadata, etc.)
+    await player.extractors.loadDefault();
+    console.log('Default extractors loaded:', [...player.extractors.store.keys()]);
+  } catch (err) {
+    console.error('فشل تحميل المكتبات الافتراضية:', err);
+  }
+
+  try {
+    // Remove the unstable scraping-based YouTube extractor
+    await player.extractors.unregister('com.discord-player.youtubeextractor');
+    console.log('تم إلغاء تسجيل مكتبة اليوتيوب القديمة.');
+  } catch (err) {
+    console.error('فشل إلغاء تسجيل مكتبة اليوتيوب القديمة:', err);
+  }
+
+  try {
+    // Register the reliable YouTube extractor instead
+    await player.extractors.register(YoutubeiExtractor, {});
+    console.log('تم تسجيل مكتبة اليوتيوب الجديدة (youtubei).');
+  } catch (err) {
+    console.error('فشل تسجيل مكتبة اليوتيوب الجديدة:', err);
+  }
+
+  console.log('المكتبات المسجلة النهائية:', [...player.extractors.store.keys()]);
 })();
 
 // ---------- Control panel buttons ----------
