@@ -34,7 +34,7 @@
             <version>5.0.0-beta.24</version>
         </dependency>
 
-        <!-- Lavaplayer: ØªØ´ØºÙÙ Ø§ÙØµÙØª ÙÙ ÙÙØªÙÙØ¨ -->
+        <!-- Lavaplayer: تشغيل الصوت من يوتيوب -->
         <dependency>
             <groupId>com.github.walkyre</groupId>
             <artifactId>lavaplayer-fork</artifactId>
@@ -52,7 +52,7 @@
     <build>
         <finalName>music-bot</finalName>
         <plugins>
-            <!-- ÙØ¬ÙØ¹ ÙÙ Ø§ÙÙÙØªØ¨Ø§Øª Ø¨ÙÙÙ Jar ÙØ§Ø­Ø¯ ÙØ§Ø¨Ù ÙÙØªØ´ØºÙÙ -->
+            <!-- يجمع كل المكتبات بملف Jar واحد قابل للتشغيل -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
