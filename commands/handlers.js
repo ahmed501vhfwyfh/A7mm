@@ -28,7 +28,8 @@ async function handlePlay(interaction) {
       data.connection = await connectToChannel(voiceChannel);
       setupPlayerEvents(guildId);
     } catch (err) {
-      await interaction.editReply("ما قدرت أتصل بالروم الصوتي 😕");
+      console.error("خطأ الاتصال بالروم الصوتي:", err);
+      await interaction.editReply(`ما قدرت أتصل بالروم الصوتي 😕\nالسبب: ${err.message}`);
       return;
     }
   }
