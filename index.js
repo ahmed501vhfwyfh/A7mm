@@ -63,4 +63,11 @@ client.on("interactionCreate", async (interaction) => {
   }
 });
 
+// تشخيص مؤقت — يطلع طول التوكن بدون كشفه، عشان نتأكد ما فيه مسافات أو نقص
+console.log("🔍 فحص التوكن:");
+console.log("   الطول:", config.token.length, "حرف");
+console.log("   أول 6 أحرف:", config.token.slice(0, 6));
+console.log("   آخر 4 أحرف:", config.token.slice(-4));
+console.log("   فيه مسافات بالبداية/النهاية؟", config.token !== config.token.trim());
+
 client.login(config.token);
