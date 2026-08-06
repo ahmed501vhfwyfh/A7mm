@@ -33,7 +33,7 @@ async function connectToChannel(voiceChannel) {
   });
 
   try {
-    await entersState(connection, VoiceConnectionStatus.Ready, 15_000);
+    await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
   } catch (err) {
     connection.destroy();
     throw err;
